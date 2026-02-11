@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimatrix Universe | IAMGENIUS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="scanline-overlay"></div>
+    <div id="flash-overlay"></div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Audio Theme -->
+    <audio id="theme-song" loop>
+        <source src="main theme.mpeg" type="audio/mpeg">
+    </audio>
+    <audio id="albedo-theme" loop>
+        <source src="albedo theme.mpeg" type="audio/mpeg">
+    </audio>
+    <audio id="core-ready-sfx" preload="auto">
+        <source src="core-ready.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="transform-sfx" preload="auto">
+        <source src="omnitrix-transform.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Header -->
+    <nav class="fandom-header">
+        <div class="nav-left">
+            <div class="site-logo glitch-wrapper">
+                <span class="glitch" data-text="IAMGENIUS">IAM<span class="green">GENIUS</span></span>
+            </div>
+        </div>
+        <div class="nav-center">
+            <a href="#" class="nav-link active">DNA-CORE</a>
+            <a href="#" id="logs-tab" class="nav-link">SYSTEM-LOGS</a>
+            <a href="#" class="nav-link">GALVAN-LINK</a>
+        </div>
+        <div class="nav-right">
+            <div class="access-level">PROTOCOL: <span class="blink">OMNI-GOD MODE</span></div>
+            <button id="audio-toggle" class="audio-toggle" title="Toggle Sound">🔊</button>
+        </div>
+    </nav>
+
+    <!-- Assistant Avatar -->
+    <div id="assistant-avatar" class="avatar-container">
+        <div class="avatar-frame">
+            <div class="laser-scanner"></div>
+            <div id="avatar-svg-wrapper">
+                <!-- Azmuth SVG will be injected here -->
+            </div>
+            <div class="avatar-tag">STATUS: <span id="avatar-name">AZMUTH</span></div>
+        </div>
+    </div>
+
+    <!-- Side Decorations -->
+    <div class="side-decoration left-omni">
+        <img src="577-5776006_t1-omnitrix-ben-10-omnitrix-png.png" alt="Omnitrix">
+    </div>
+    <div class="side-decoration right-ultra">
+        <div class="status-panel-side">
+            <div id="charge-status" style="font-size: 0.7rem; color: var(--neon-green); font-family: var(--font-head);">CORE ENERGY: 100%</div>
+            <button id="manual-recharge" class="audio-toggle" style="margin-top: 8px; font-size: 0.6rem; width: 100%;">FORCE RECHARGE</button>
+        </div>
+        <img src="577-5776006_t1-omnitrix-ben-10-omnitrix-png.png" alt="Omnitrix">
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="omnitrix-dial-container" id="activate-btn">
+            <div class="dial-hologram"></div>
+            <div class="ring ring-3"></div>
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-4"></div>
+            <div class="core-dial">
+                <div class="hourglass"></div>
+            </div>
+        </div>
+        <div class="loader-text" id="loader-status">ULTIMATRIX SYSTEM OFFLINE</div>
+        <div class="status-message">CLICK DIAL TO INITIATE MASTER CONTROL</div>
+    </div>
+
+    <!-- Auth Terminal -->
+    <div id="auth-screen">
+        <div class="terminal-box">
+            <div class="terminal-header">DNA-CORE AUTHORIZATION</div>
+            <div class="terminal-body">
+                <p class="typing-text">IDENTIFICATION REQUIRED...</p>
+                <div class="input-wrapper">
+                    <input type="text" id="codename-input" maxlength="15" autocomplete="off" placeholder="CODENAME">
+                </div>
+                <button id="auth-submit">INITIALIZE UPLINK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DNA Sync -->
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <div class="sync-circle-outer"></div>
+            <div class="sync-circle-inner"></div>
+            <div class="welcome-text-wrapper">
+                <h2 id="welcome-text">SYNCHRONIZING...</h2>
+            </div>
+            <div class="loading-bar-container">
+                <div class="loading-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper for Sliding -->
+    <div id="page-wrapper" class="page-container">
+        <!-- DNA-CORE Page -->
+        <section id="main-content" class="page-section active-page">
+            <div class="wiki-container">
+                <header class="main-header">
+                    <h1>ULTIMATRIX <span class="highlight">UNIVERSE</span></h1>
+                    <div class="subtitle-wrapper" style="display: flex; align-items: center; gap: 20px;">
+                        <div class="subtitle flux-text" id="user-display">DNA REPOSITORY // SEC: MILKY WAY</div>
+                        <div id="badge-container" style="display: flex; gap: 10px;"></div>
+                    </div>
+                </header>
+
+                <div class="controls-wrapper">
+                    <div class="controls">
+                        <div class="input-group">
+                            <label>SEARCH DNA</label>
+                            <input type="text" id="search-bar" placeholder="SPECIES NAME...">
+                        </div>
+                        <div class="input-group">
+                            <label>TIMELINE</label>
+                            <select id="filter-series">
+                                <option value="">ALL TIMELINES</option>
+                                <option value="Classic">CLASSIC</option>
+                                <option value="Alien Force">ALIEN FORCE</option>
+                                <option value="Ultimate Alien">ULTIMATE ALIEN</option>
+                                <option value="Omniverse">OMNIVERSE</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>CLASS</label>
+                            <select id="filter-power">
+                                <option value="">ALL CLASSES</option>
+                                <option value="Strength">STRENGTH</option>
+                                <option value="Fire">FIRE</option>
+                                <option value="Speed">SPEED</option>
+                                <option value="Energy">ENERGY</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>SORT BY</label>
+                            <select id="sort-aliens">
+                                <option value="id">DNA ID</option>
+                                <option value="name">ALPHABETICAL</option>
+                                <option value="series">TIMELINE</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alien-grid"></div>
+            </div>
+
+            <footer class="fandom-footer">
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h4>TIMELINES</h4>
+                        <ul>
+                            <li>Classic Era</li>
+                            <li>Alien Force</li>
+                            <li>Ultimate Alien</li>
+                            <li>Omniverse</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>RESOURCES</h4>
+                        <ul>
+                            <li>DNA Samples</li>
+                            <li>Planet Database</li>
+                            <li>Plumber Badges</li>
+                            <li>Null Void Map</li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>SYSTEM</h4>
+                        <ul>
+                            <li>Tech Level 20</li>
+                            <li>Azmuth Protocols</li>
+                            <li>Albedo Override</li>
+                            <li>Galvan Prime</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 PLUMBER HIGH COMMAND. ALL DNA SAMPLES ARE SECURED.</p>
+                    <button id="security-bypass" class="bypass-btn">[ SECURITY BYPASS ]</button>
+                </div>
+            </footer>
+        </section>
+
+        <!-- SYSTEM-LOGS Page -->
+        <section id="logs-page" class="page-section">
+            <div class="wiki-container">
+                <header class="main-header">
+                    <h1>SYSTEM <span class="highlight">LOGS</span></h1>
+                    <div class="subtitle-wrapper">
+                        <div class="subtitle flux-text">PLUMBER DATABASE // ACCESS: SECURE</div>
+                    </div>
+                </header>
+
+                <div class="controls-wrapper">
+                    <div class="controls" style="grid-template-columns: 1fr auto;">
+                        <div class="input-group">
+                            <label>DATA STREAM</label>
+                            <div class="logs-sidebar-nav">
+                                <button class="log-filter-btn active" data-type="aliens">ALIENS</button>
+                                <button class="log-filter-btn" data-type="characters">CHARACTERS</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="logs-grid" class="logs-content-grid"></div>
+            </div>
+            
+            <footer class="fandom-footer">
+                <div class="footer-bottom">
+                    <p>&copy; 2026 PLUMBER HIGH COMMAND. DATA LOGS ARE ENCRYPTED.</p>
+                </div>
+            </footer>
+        </section>
+
+        <!-- GALVAN-LINK Page (3rd Page) -->
+        <section id="galvan-page" class="page-section">
+            <div class="wiki-container">
+                <header class="main-header">
+                    <h1>GALVAN <span class="highlight">LINK</span></h1>
+                    <div class="subtitle-wrapper">
+                        <div class="subtitle flux-text">DIRECT NEURAL INTERFACE // SECTOR: GALVAN PRIME</div>
+                    </div>
+                </header>
+
+                <div class="coming-soon-container">
+                    <div class="coming-soon-content">
+                        <div class="warning-icon">⚠️</div>
+                        <h2 class="blink">ENCRYPTED UPLINK PENDING</h2>
+                        <p>This communication channel is currently being established by First Thinker Azmuth.</p>
+                        <div class="loading-bar-container" style="position: relative; bottom: 0; width: 100%; margin-top: 30px;">
+                            <div class="loading-bar-fill" style="width: 65%; animation: progress-infinite 2s linear infinite;"></div>
+                        </div>
+                        <div class="status-tag">COMING SOON</div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="fandom-footer">
+                <div class="footer-bottom">
+                    <p>&copy; 2026 GALVAN COMMAND. UNAUTHORIZED ACCESS PROHIBITED.</p>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="alien-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="close-modal">DISCONNECT</button>
+            <div class="modal-body" id="modal-details"></div>
+        </div>
+    </div>
+
+    <!-- Decryption Terminal -->
+    <div id="decryption-modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="terminal-box">
+            <div class="terminal-header">ENCRYPTED DNA DETECTED</div>
+            <div class="terminal-body">
+                <p class="typing-text">ENTER DECRYPTION KEY:</p>
+                <div class="input-wrapper">
+                    <input type="text" id="decrypt-input" maxlength="10" autocomplete="off" placeholder="PASSCODE">
+                </div>
+                <div id="decrypt-msg"></div>
+                <button id="decrypt-submit">DECRYPT SEQUENCE</button>
+            </div>
+            <button class="close-modal close-decrypt">X</button>
+        </div>
+    </div>
+
+    <!-- Recharge Overlay -->
+    <div id="recharge-overlay">
+        <div class="recharge-content">
+            <h1 class="blink" style="color: #ff1414; font-size: 3rem; margin-bottom: 20px;">SYSTEM RECHARGING</h1>
+            <div class="loading-bar-container" style="width: 400px; background: #300;">
+                <div class="loading-bar-fill" id="recharge-fill" style="background: #ff1414;"></div>
+            </div>
+            <p style="margin-top: 20px; color: #ff5555;">OMNITRIX COOLING DOWN...</p>
+        </div>
+    </div>
+
+    <!-- Breach Alert -->
+    <div id="breach-alert">
+        <div class="glitch-static"></div>
+        <div class="light-effect red-light"></div>
+        <div class="breach-text">SYSTEM BREACH</div>
+        <div style="color: #ff1414; font-family: var(--font-head); margin-top: 10px; font-weight: bold; letter-spacing: 5px; z-index: 10;">ALBEDO OVERRIDE DETECTED</div>
+    </div>
+
+    <!-- Restore Alert -->
+    <div id="restore-alert">
+        <div class="restore-scan"></div>
+        <div class="restore-circles"></div>
+        <div class="light-effect green-light"></div>
+        <div class="restore-text">SYSTEM RESTORED</div>
+        <div style="color: var(--neon-green); font-family: var(--font-head); margin-top: 10px; font-weight: bold; letter-spacing: 5px; z-index: 10;">AZMUTH PROTOCOLS ENGAGED</div>
+    </div>
+
+    <script src="aliens.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
