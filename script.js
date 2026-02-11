@@ -389,11 +389,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         welcomeScreen.style.display = 'none';
                         pageWrapper.style.display = 'block';
                         userDisplay.innerHTML = `OPERATOR IDENTIFIED: <span class="highlight">${userCodename}</span> // SEC: MILKY WAY // [TECH LEVEL: 20]`;
+                        
+                        const galvanUserId = document.getElementById('galvan-user-id');
+                        if (galvanUserId) galvanUserId.innerText = `UID_${userCodename}_${Math.floor(Math.random() * 10000)}`;
+
                         renderAliens(aliens);
                         interact();
                         setTimeout(() => {
                             pageWrapper.style.opacity = '1';
                             document.body.classList.add('avatar-active');
+                            startAzmuthTerminal();
                         }, 100);
                     }, 800);
                 }, 1500);
@@ -402,6 +407,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingFill.style.width = w + '%';
             }
         }, 50);
+    }
+
+    function startAzmuthTerminal() {
+        const term = document.getElementById('azmuth-terminal');
+        if (!term) return;
+        const msgs = [
+            `> ANALYZING DNA SAMPLES...`,
+            `> GALVAN PRIME RELAY ACTIVE.`,
+            `> ENCRYPTED STREAM DETECTED.`,
+            `> BENJAMIN KIRBY TENNYSON LOGS ACCESSED.`,
+            `> CAUTION: MASTER CONTROL IS ACTIVE.`,
+            `> DNA INTEGRITY: 100%.`,
+            `> RECOGNIZING ${userCodename}...`,
+            `> ACCESS GRANTED BY FIRST THINKER.`
+        ];
+        let i = 0;
+        setInterval(() => {
+            const m = msgs[Math.floor(Math.random() * msgs.length)];
+            const div = document.createElement('div');
+            div.innerHTML = m;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+            if (term.childNodes.length > 15) term.removeChild(term.childNodes[0]);
+        }, 3000);
     }
 
     function renderAliens(data) {
@@ -418,16 +447,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${isLocked ? '<div class="lock-overlay"><div class="lock-icon">🔒</div></div>' : ''}
                 </div>
                 <div class="card-info">
+                    <div style="font-size: 0.6rem; color: var(--neon-green); letter-spacing: 1px; margin-bottom: 5px;">THREAT LEVEL: ${Math.floor(Math.random() * 5) + 5}/10</div>
                     <div style="font-size: 0.7rem; color: #444; letter-spacing: 2px;">${alien.series.toUpperCase()}</div>
-                    <h3 style="font-family: 'Orbitron'; font-size: 1.1rem;">${alien.name}</h3>
+                    <h3>${alien.name}</h3>
                 </div>
             `;
             card.addEventListener('mousemove', (e) => {
                 if (card.classList.contains('flipping')) return;
                 const r = card.getBoundingClientRect();
-                const x = ((e.clientX - r.left - r.width/2) / r.width * 30);
-                const y = -((e.clientY - r.top - r.height/2) / r.height * 30);
-                card.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) scale(1.05)`;
+                const x = ((e.clientX - r.left - r.width/2) / r.width * 20);
+                const y = -((e.clientY - r.top - r.height/2) / r.height * 20);
+                card.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) scale(1.02)`;
             });
             card.addEventListener('mouseleave', () => {
                 if (card.classList.contains('flipping')) return;
@@ -459,12 +489,17 @@ document.addEventListener('DOMContentLoaded', () => {
         logsGrid.innerHTML = '';
         const data = database[type];
         data.forEach((item, i) => {
+            const timestamp = new Date().toLocaleTimeString();
             const card = document.createElement('div');
             card.className = 'log-card';
             card.style.animation = `fadeInUp 0.5s ease forwards ${i * 0.05}s`;
             card.innerHTML = `
+                <div style="font-size: 0.6rem; color: #444; margin-bottom: 5px;">TIMESTAMP: ${timestamp} // SOURCE: GALVAN_DATABASE_${type.toUpperCase()}</div>
                 <h5>${item.name.toUpperCase()}</h5>
-                <div class="log-meta">${item.species || item.role} | ${item.planet || 'UNKNOWN ORIGIN'}</div>
+                <div class="log-meta">
+                    <span>${item.species || item.role}</span>
+                    <span style="color: var(--neon-green-dim); font-size: 0.7rem;">[ ${item.planet || 'UNKNOWN'} ]</span>
+                </div>
                 <p class="log-desc">${item.description}</p>
             `;
             logsGrid.appendChild(card);

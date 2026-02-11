@@ -298,18 +298,271 @@ body.hovering .cursor-outline { width: 60px; height: 60px; background: rgba(57, 
 input, select { width: 100%; background: #000; border: 1px solid #333; color: var(--neon-green); padding: 10px; font-family: var(--font-body); font-size: 1.1rem; outline: none; }
 
 /* --- Alien Grid --- */
-#alien-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; perspective: 1000px; }
-.alien-card { background: #080a08; border: 1px solid #111; height: 320px; cursor: pointer; transition: transform 0.1s ease-out; transform-style: preserve-3d; clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%); opacity: 0; }
-.alien-card:hover { border-color: var(--neon-green); }
-.locked-dna { opacity: 0.6; filter: grayscale(1); cursor: not-allowed; }
-.locked-dna:hover { border-color: #333; transform: none !important; }
+#alien-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; perspective: 2000px; }
 
-.card-image-container { height: 200px; display: flex; justify-content: center; align-items: center; transform: translateZ(20px); position: relative; }
-.lock-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 5; }
-.lock-icon { font-size: 2rem; color: #555; text-shadow: 0 0 10px #000; }
+.alien-card { 
+    background: linear-gradient(135deg, rgba(10,20,10,0.8), rgba(0,0,0,0.9));
+    border: 1px solid var(--neon-green-dim);
+    height: 350px; 
+    cursor: pointer; 
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform-style: preserve-3d; 
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    opacity: 0; 
+    position: relative;
+    overflow: hidden;
+}
 
-.alien-card img { max-width: 80%; max-height: 160px; filter: brightness(0.7); transform: translateZ(30px); }
-.card-info { padding: 15px; border-top: 1px solid #111; transform: translateZ(10px); }
+.alien-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(57, 255, 20, 0.1), transparent);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.alien-card:hover::before {
+    left: 100%;
+}
+
+.alien-card:hover { 
+    border-color: var(--neon-green); 
+    box-shadow: 0 0 30px var(--neon-green-dim), inset 0 0 15px var(--neon-green-dim);
+    background: linear-gradient(135deg, rgba(20,40,20,0.9), rgba(5,10,5,1));
+}
+
+.card-image-container { 
+    height: 220px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transform: translateZ(40px); 
+    position: relative;
+    padding: 20px;
+}
+
+.alien-card img { 
+    max-width: 90%; 
+    max-height: 180px; 
+    filter: brightness(0.8) drop-shadow(0 0 10px rgba(0,0,0,0.5)); 
+    transform: translateZ(50px);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.alien-card:hover img {
+    filter: brightness(1.1) drop-shadow(0 0 20px var(--neon-green-glow));
+    transform: translateZ(70px) scale(1.1);
+}
+
+.card-info { 
+    padding: 20px; 
+    border-top: 1px solid var(--neon-green-dim); 
+    transform: translateZ(20px);
+    background: rgba(0,0,0,0.5);
+}
+
+.card-info h3 {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: #fff;
+    margin-top: 5px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--neon-green-dim);
+}
+
+/* --- Logs Page Styles --- */
+.logs-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.log-card {
+    background: rgba(10, 20, 10, 0.4);
+    border: 1px solid var(--neon-green-dim);
+    padding: 30px;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+}
+
+.log-card::after {
+    content: 'SECURE_DATA_PACKET';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.5rem;
+    color: var(--neon-green-dim);
+    font-family: var(--font-head);
+}
+
+.log-card:hover {
+    background: rgba(57, 255, 20, 0.08);
+    border-color: var(--neon-green);
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 20px var(--neon-green-dim);
+}
+
+.log-card h5 {
+    color: var(--neon-green);
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    letter-spacing: 3px;
+    border-bottom: 1px solid var(--neon-green-dim);
+    padding-bottom: 10px;
+}
+
+.log-card .log-meta {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 20px;
+    font-family: var(--font-head);
+    display: flex;
+    justify-content: space-between;
+}
+
+.log-card .log-desc {
+    font-size: 1rem;
+    color: #ccc;
+    line-height: 1.8;
+    font-family: var(--font-body);
+}
+
+/* --- Galvan Page Enhancements --- */
+#galvan-page .wiki-container {
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.galvan-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 30px;
+    flex-grow: 1;
+    margin-top: 40px;
+}
+
+.dashboard-panel {
+    background: rgba(0, 20, 0, 0.3);
+    border: 1px solid var(--neon-green-dim);
+    padding: 25px;
+    position: relative;
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-panel h3 {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    color: var(--neon-green);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dashboard-panel h3::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+}
+
+.neural-link-viz {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.neural-circle {
+    position: absolute;
+    border: 1px solid var(--neon-green-dim);
+    border-radius: 50%;
+}
+
+.circle-1 { width: 100px; height: 100px; border-style: dashed; animation: spin 10s linear infinite; }
+.circle-2 { width: 150px; height: 150px; border-width: 2px; border-color: var(--neon-green-dim); }
+.circle-3 { width: 200px; height: 200px; border-top-color: var(--neon-green); animation: spin 5s linear infinite reverse; }
+
+.data-stream-viz {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+}
+
+.stream-bar {
+    height: 4px;
+    background: var(--neon-green-dim);
+    position: relative;
+    overflow: hidden;
+}
+
+.stream-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+    animation: stream-anim 2s ease-in-out infinite;
+}
+
+@keyframes stream-anim {
+    0% { left: -100%; width: 30%; }
+    50% { width: 60%; }
+    100% { left: 100%; width: 30%; }
+}
+
+.coming-soon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40vh;
+    text-align: center;
+}
+
+.coming-soon-content {
+    background: rgba(57, 255, 20, 0.05);
+    border: 1px dashed var(--neon-green);
+    padding: 40px;
+    max-width: 500px;
+    position: relative;
+    clip-path: polygon(25px 0, 100% 0, 100% calc(100% - 25px), calc(100% - 25px) 100%, 0 100%, 0 25px);
+}
+
+.warning-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.status-tag {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: var(--neon-green);
+    color: #000;
+    padding: 4px 20px;
+    font-family: var(--font-head);
+    font-weight: bold;
+    font-size: 0.6rem;
+    clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+    box-shadow: 0 0 15px var(--neon-green-glow);
+    letter-spacing: 2px;
+}
 
 /* --- Modal --- */
 .modal { display: none; position: fixed; inset: 0; z-index: 11000; justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto; }
