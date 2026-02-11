@@ -382,14 +382,15 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
 }
 
 .log-card {
-    background: rgba(10, 20, 10, 0.4);
+    background: rgba(0, 5, 0, 0.9); /* Darker, more opaque background for better contrast */
     border: 1px solid var(--neon-green-dim);
     padding: 30px;
     transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 .log-card::after {
@@ -397,13 +398,15 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 0.5rem;
-    color: var(--neon-green-dim);
+    font-size: 0.55rem;
+    color: var(--neon-green);
+    opacity: 0.3;
     font-family: var(--font-head);
+    letter-spacing: 1px;
 }
 
 .log-card:hover {
-    background: rgba(57, 255, 20, 0.08);
+    background: rgba(10, 25, 10, 0.95);
     border-color: var(--neon-green);
     transform: translateY(-5px) scale(1.01);
     box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 20px var(--neon-green-dim);
@@ -412,53 +415,88 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
 .log-card h5 {
     color: var(--neon-green);
     font-family: var(--font-head);
-    font-size: 1.3rem;
+    font-size: 1.4rem; /* Slightly larger */
     margin-bottom: 15px;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     border-bottom: 1px solid var(--neon-green-dim);
     padding-bottom: 10px;
+    text-shadow: 0 0 10px var(--neon-green-dim);
 }
 
 .log-card .log-meta {
-    font-size: 0.8rem;
-    color: #888;
-    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: #aaa; /* Lighter for better readability */
+    margin-bottom: 18px;
     font-family: var(--font-head);
     display: flex;
     justify-content: space-between;
+    letter-spacing: 1px;
 }
 
 .log-card .log-desc {
-    font-size: 1rem;
-    color: #ccc;
-    line-height: 1.8;
+    font-size: 1.05rem; /* Larger font */
+    color: #f0f0f0; /* Near white for maximum contrast */
+    line-height: 1.6;
     font-family: var(--font-body);
+    font-weight: 500; /* Medium weight */
 }
 
 /* --- Galvan Page Enhancements --- */
 #galvan-page .wiki-container {
-    height: calc(100vh - 120px);
+    min-height: calc(100vh - 200px); /* Ensure container takes enough space */
     display: flex;
     flex-direction: column;
+    padding-bottom: 60px;
 }
 
 .galvan-dashboard {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 30px;
-    flex-grow: 1;
-    margin-top: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
 }
 
 .dashboard-panel {
-    background: rgba(0, 20, 0, 0.3);
+    background: rgba(0, 10, 0, 0.7);
     border: 1px solid var(--neon-green-dim);
-    padding: 25px;
+    padding: 30px;
     position: relative;
     clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
     display: flex;
     flex-direction: column;
+    min-height: 250px;
+    backdrop-filter: blur(5px);
+}
+
+/* Specific styling for the Pending Sync panel to make it look intentional */
+.sync-panel {
+    grid-column: 1 / -1; /* Full width */
+    background: rgba(57, 255, 20, 0.03);
+    border: 1px dashed var(--neon-green);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    min-height: auto;
+    padding: 40px;
+}
+
+.sync-status-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 15px var(--neon-green));
+}
+
+.sync-details h2 {
+    font-family: var(--font-head);
+    color: var(--neon-green);
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.sync-details p {
+    color: #ccc;
+    font-size: 0.95rem;
 }
 
 .dashboard-panel h3 {
