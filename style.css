@@ -759,76 +759,105 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
 .glitch::after { left: -2px; text-shadow: -1px 0 #00fff9; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim 5s infinite linear alternate-reverse; }
 @keyframes glitch-anim { 0% { clip: rect(10px, 9999px, 30px, 0); transform: skew(0.5deg); } 10% { clip: rect(30px, 9999px, 10px, 0); transform: skew(0.8deg); } 100% { clip: rect(60px, 9999px, 20px, 0); transform: skew(0.1deg); } }
 
-/* --- Fandom-style Footer --- */
+/* --- Professional Footer --- */
 .fandom-footer {
-    background: rgba(0,0,0,0.9); border-top: 2px solid var(--border-color);
-    padding: 60px 40px 30px; margin-top: 100px; position: relative; z-index: 10;
-}
-
-.footer-columns {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px; max-width: 1100px; margin: 0 auto;
-}
-
-.footer-col h4 {
-    font-family: var(--font-head); font-size: 0.9rem; color: var(--neon-green);
-    margin-bottom: 25px; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-green-dim);
-}
-
-.footer-col ul { list-style: none; }
-
-.footer-col li {
-    color: #555; margin-bottom: 12px; font-size: 0.9rem;
-    transition: 0.3s; cursor: pointer;
-}
-
-.footer-col li:hover {
-    color: #fff; transform: translateX(5px); text-shadow: 0 0 5px #fff;
-}
-
-.social-links {
+    background: rgba(0,0,0,0.95);
+    border-top: 1px solid var(--neon-green-dim);
+    padding: 60px 40px;
     display: flex;
-    gap: 20px;
-    margin-top: 15px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+    margin-top: 100px;
 }
 
-.social-links a, .footer-social-minimal a {
+.footer-left, .footer-right {
+    display: flex;
+    gap: 25px;
+    flex: 1;
+}
+
+.footer-right {
+    justify-content: flex-end;
+}
+
+.footer-center {
+    flex: 2;
+    text-align: center;
+    max-width: 700px;
+}
+
+.footer-center p {
+    font-size: 0.65rem;
+    color: #444;
+    line-height: 1.6;
+    font-family: var(--font-head);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+
+.footer-center p:hover {
+    color: #888;
+}
+
+.social-link-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.link-label {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 10px;
+    font-size: 0.6rem;
+    color: var(--neon-green);
+    font-family: var(--font-head);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translateY(10px);
+    white-space: nowrap;
+    text-shadow: 0 0 10px var(--neon-green-dim);
+}
+
+.social-link-wrapper:hover .link-label {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.social-link-wrapper a {
     color: #555;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: inline-block;
 }
 
-.social-links a:hover, .footer-social-minimal a:hover {
-    transform: translateY(-5px) scale(1.2);
+.social-link-wrapper:hover a {
+    transform: scale(1.2);
 }
 
-.social-links a[title="Email"]:hover, .footer-social-minimal a[title="Email"]:hover { color: #ea4335; filter: drop-shadow(0 0 10px #ea4335); }
-.social-links a[title="LinkedIn"]:hover, .footer-social-minimal a[title="LinkedIn"]:hover { color: #0077b5; filter: drop-shadow(0 0 10px #0077b5); }
-.social-links a[title="X (Twitter)"]:hover, .footer-social-minimal a[title="X (Twitter)"]:hover { color: #ffffff; filter: drop-shadow(0 0 10px #ffffff); }
-.social-links a[title="Reddit"]:hover, .footer-social-minimal a[title="Reddit"]:hover { color: #ff4500; filter: drop-shadow(0 0 10px #ff4500); }
-.social-links a[title="YouTube"]:hover, .footer-social-minimal a[title="YouTube"]:hover { color: #ff0000; filter: drop-shadow(0 0 10px #ff0000); }
-.social-links a[title="Instagram"]:hover, .footer-social-minimal a[title="Instagram"]:hover { color: #e1306c; filter: drop-shadow(0 0 10px #e1306c); }
-.social-links a[title="GitHub"]:hover, .footer-social-minimal a[title="GitHub"]:hover { color: #6e5494; filter: drop-shadow(0 0 10px #6e5494); }
-
-.main-socials {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    max-width: 200px;
-}
-
-.footer-social-minimal {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 20px;
-}
+.social-link-wrapper a[title="Email"]:hover { color: #ea4335; filter: drop-shadow(0 0 10px #ea4335); }
+.social-link-wrapper a[title="LinkedIn"]:hover { color: #0077b5; filter: drop-shadow(0 0 10px #0077b5); }
+.social-link-wrapper a[title="X (Twitter)"]:hover { color: #ffffff; filter: drop-shadow(0 0 10px #ffffff); }
+.social-link-wrapper a[title="Reddit"]:hover { color: #ff4500; filter: drop-shadow(0 0 10px #ff4500); }
+.social-link-wrapper a[title="YouTube"]:hover { color: #ff0000; filter: drop-shadow(0 0 10px #ff0000); }
+.social-link-wrapper a[title="Instagram"]:hover { color: #e1306c; filter: drop-shadow(0 0 10px #e1306c); }
+.social-link-wrapper a[title="GitHub"]:hover { color: #6e5494; filter: drop-shadow(0 0 10px #6e5494); }
 
 .footer-bottom {
-    text-align: center; margin-top: 60px; padding-top: 20px;
-    border-top: 1px solid #111; font-size: 0.7rem; color: #333;
-    font-family: var(--font-head); letter-spacing: 1px;
+    width: 100%;
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #111;
 }
 
 /* --- Decryption Terminal --- */
