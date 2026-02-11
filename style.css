@@ -800,9 +800,22 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
 }
 
 .social-links a:hover, .footer-social-minimal a:hover {
-    color: var(--neon-green);
     transform: translateY(-5px) scale(1.2);
-    filter: drop-shadow(0 0 10px var(--neon-green));
+}
+
+.social-links a[title="Email"]:hover, .footer-social-minimal a[title="Email"]:hover { color: #ea4335; filter: drop-shadow(0 0 10px #ea4335); }
+.social-links a[title="LinkedIn"]:hover, .footer-social-minimal a[title="LinkedIn"]:hover { color: #0077b5; filter: drop-shadow(0 0 10px #0077b5); }
+.social-links a[title="X (Twitter)"]:hover, .footer-social-minimal a[title="X (Twitter)"]:hover { color: #ffffff; filter: drop-shadow(0 0 10px #ffffff); }
+.social-links a[title="Reddit"]:hover, .footer-social-minimal a[title="Reddit"]:hover { color: #ff4500; filter: drop-shadow(0 0 10px #ff4500); }
+.social-links a[title="YouTube"]:hover, .footer-social-minimal a[title="YouTube"]:hover { color: #ff0000; filter: drop-shadow(0 0 10px #ff0000); }
+.social-links a[title="Instagram"]:hover, .footer-social-minimal a[title="Instagram"]:hover { color: #e1306c; filter: drop-shadow(0 0 10px #e1306c); }
+.social-links a[title="GitHub"]:hover, .footer-social-minimal a[title="GitHub"]:hover { color: #6e5494; filter: drop-shadow(0 0 10px #6e5494); }
+
+.main-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    max-width: 200px;
 }
 
 .footer-social-minimal {
