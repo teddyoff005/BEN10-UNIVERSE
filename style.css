@@ -873,6 +873,7 @@ input, select { width: 100%; background: #000; border: 1px solid #333; color: va
 .social-link-wrapper a[title="YouTube"]:hover { color: #ff0000; filter: drop-shadow(0 0 10px #ff0000); }
 .social-link-wrapper a[title="Instagram"]:hover { color: #e1306c; filter: drop-shadow(0 0 10px #e1306c); }
 .social-link-wrapper a[title="GitHub"]:hover { color: #6e5494; filter: drop-shadow(0 0 10px #6e5494); }
+.social-link-wrapper a[title="Facebook"]:hover { color: #1877f2; filter: drop-shadow(0 0 10px #1877f2); }
 
 .footer-bottom {
     width: 100%;
