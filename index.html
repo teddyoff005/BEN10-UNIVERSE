@@ -61,8 +61,11 @@
                 <!-- Azmuth SVG will be injected here -->
             </div>
             <div class="avatar-tag">STATUS: <span id="avatar-name">AZMUTH</span></div>
+            <div id="speech-bubble" class="speech-bubble"></div>
         </div>
     </div>
+
+    <div id="achievement-popup-container"></div>
 
     <!-- Side Decorations -->
     <div class="side-decoration left-omni">
@@ -333,10 +336,22 @@
                     </div>
                     <div class="dashboard-panel">
                         <h3>AZMUTH MESSAGES</h3>
-                        <div id="azmuth-terminal" style="flex-grow: 1; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; color: var(--neon-green); padding: 10px; overflow-y: auto; background: rgba(0,0,0,0.5);">
-                            > SYSTEM READY.<br>
-                            > UPLINK ESTABLISHED.<br>
-                            > MONITORING MASTER CONTROL...
+                        <div id="azmuth-terminal" style="flex-grow: 1; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; color: var(--neon-green); padding: 10px; overflow-y: auto; background: rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+                            <div id="terminal-history">
+                                > SYSTEM READY.<br>
+                                > UPLINK ESTABLISHED.<br>
+                                > MONITORING MASTER CONTROL...
+                            </div>
+                            <div class="terminal-input-line" style="display: flex; gap: 5px; margin-top: auto;">
+                                <span>></span>
+                                <input type="text" id="terminal-input" autocomplete="off" style="background: transparent; border: none; color: var(--neon-green); font-family: inherit; font-size: inherit; width: 100%; padding: 0; outline: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-panel">
+                        <h3>PLUMBER ACHIEVEMENTS</h3>
+                        <div id="achievements-grid" class="achievements-grid">
+                            <!-- Achievements will be injected here -->
                         </div>
                     </div>
 
@@ -419,12 +434,21 @@
         <div class="terminal-box">
             <div class="terminal-header">ENCRYPTED DNA DETECTED</div>
             <div class="terminal-body">
-                <p class="typing-text">ENTER DECRYPTION KEY:</p>
-                <div class="input-wrapper">
-                    <input type="text" id="decrypt-input" maxlength="10" autocomplete="off" placeholder="PASSCODE">
+                <div id="dna-minigame-container">
+                    <p class="typing-text">REPLICATE DNA SEQUENCE:</p>
+                    <div class="dna-sequence-display" id="dna-sequence-display">
+                        <!-- Sequence dots will appear here -->
+                    </div>
+                    <div class="dna-nodes-grid" id="dna-nodes-grid">
+                        <div class="dna-node" data-id="0"></div>
+                        <div class="dna-node" data-id="1"></div>
+                        <div class="dna-node" data-id="2"></div>
+                        <div class="dna-node" data-id="3"></div>
+                    </div>
                 </div>
                 <div id="decrypt-msg"></div>
-                <button id="decrypt-submit">DECRYPT SEQUENCE</button>
+                <button id="decrypt-submit" style="display: none;">DECRYPT SEQUENCE</button>
+                <button id="start-minigame" class="bypass-btn" style="width: 100%; margin-top: 20px; font-size: 0.8rem;">INITIATE RECONSTRUCTION</button>
             </div>
             <button class="close-modal close-decrypt">X</button>
         </div>
@@ -456,6 +480,14 @@
         <div class="light-effect green-light"></div>
         <div class="restore-text">SYSTEM RESTORED</div>
         <div style="color: var(--neon-green); font-family: var(--font-head); margin-top: 10px; font-weight: bold; letter-spacing: 5px; z-index: 10;">AZMUTH PROTOCOLS ENGAGED</div>
+    </div>
+
+    <!-- Quick Dial -->
+    <div id="quick-dial-container">
+        <div class="quick-dial-trigger">
+            <div class="mini-hourglass"></div>
+        </div>
+        <div id="quick-dial-menu" class="quick-dial-menu"></div>
     </div>
 
     <script src="aliens.js"></script>

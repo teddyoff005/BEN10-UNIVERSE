@@ -151,12 +151,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateAvatar('azmuth');
 
+    function speakProtocol(message, mode = 'azmuth') {
+        const bubble = document.getElementById('speech-bubble');
+        if (!bubble) return;
+
+        bubble.innerText = message;
+        bubble.classList.add('active');
+        
+        // Also log to terminal
+        const history = document.getElementById('terminal-history');
+        const term = document.getElementById('azmuth-terminal');
+        if (history && term) {
+            const color = mode === 'azmuth' ? 'var(--neon-green)' : '#ff1414';
+            const div = document.createElement('div');
+            div.style.color = color;
+            div.style.fontSize = '0.7rem';
+            div.innerHTML = `> [INTERFACE]: ${message}`;
+            history.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+            while (history.childNodes.length > 10) history.removeChild(history.firstChild);
+        }
+
+        setTimeout(() => {
+            bubble.classList.remove('active');
+        }, 5000);
+    }
+
+    // --- ACHIEVEMENT SYSTEM ---
+    const achievements = [
+        { id: 'navigator', name: 'MASTER NAVIGATOR', desc: 'Visit all core systems (DNA, Logs, Galvan).', icon: '🌐', check: () => visitedPages.size >= 3 },
+        { id: 'geneticist', name: 'GENETICIST', desc: 'Unlock 1 new DNA sample.', icon: '🧬', check: () => aliens.filter(a => a.unlock_status === 'ACTIVE' && a.id > 100).length >= 1 },
+        { id: 'expert_geneticist', name: 'EXPERT GENETICIST', desc: 'Unlock 3 new DNA samples.', icon: '🔬', check: () => aliens.filter(a => a.unlock_status === 'ACTIVE' && a.id > 100).length >= 3 },
+        { id: 'engineer', name: 'CORE ENGINEER', desc: 'Perform a manual system recharge.', icon: '⚡', check: () => stats.manualRecharges >= 1 },
+        { id: 'power_user', name: 'POWER USER', desc: 'Maintain system for 5 recharges.', icon: '🔋', check: () => stats.manualRecharges >= 5 },
+        { id: 'thinker', name: 'FIRST THINKER', desc: 'Execute 10 terminal commands.', icon: '🧠', check: () => stats.terminalCmds >= 10 },
+        { id: 'terminal_master', name: 'TERMINAL MASTER', desc: 'Execute 25 terminal commands.', icon: '💻', check: () => stats.terminalCmds >= 25 },
+        { id: 'warrior', name: 'WARRIOR SPIRIT', desc: 'Analyze Albedo override mode.', icon: '👹', check: () => stats.albedoModes >= 1 },
+        { id: 'vigilant', name: 'VIGILANT OPERATOR', desc: 'Switch modes 5 times.', icon: '🛡️', check: () => stats.albedoModes >= 5 },
+        { id: 'collector', name: 'ELITE COLLECTOR', desc: 'View 5 different alien species.', icon: '🏆', check: () => recentlyViewed.length >= 5 },
+        { id: 'historian', name: 'DNA HISTORIAN', desc: 'Review character logs in depth.', icon: '📜', check: () => stats.logsViewed >= 1 }
+    ];
+
+    const visitedPages = new Set(['dna']);
+    const stats = { manualRecharges: 0, terminalCmds: 0, albedoModes: 0, logsViewed: 0 };
+    let unlockedAchievements = new Set();
+
+    function showAchievementPopup(ach) {
+        const container = document.getElementById('achievement-popup-container');
+        if (!container) return;
+
+        const popup = document.createElement('div');
+        popup.className = 'achievement-popup';
+        popup.innerHTML = `
+            <div class="popup-icon">${ach.icon}</div>
+            <div class="popup-text">
+                <h4>ACHIEVEMENT UNLOCKED</h4>
+                <p>${ach.name}</p>
+            </div>
+        `;
+        
+        container.appendChild(popup);
+        
+        if (coreReadySfx) {
+            coreReadySfx.currentTime = 0;
+            coreReadySfx.play().catch(() => {});
+        }
+
+        setTimeout(() => {
+            popup.style.animation = 'popup-slide-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards';
+            setTimeout(() => popup.remove(), 600);
+        }, 4000);
+    }
+
+    function updateAchievements() {
+        const grid = document.getElementById('achievements-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        achievements.forEach(ach => {
+            const isUnlocked = ach.check();
+            if (isUnlocked && !unlockedAchievements.has(ach.id)) {
+                unlockedAchievements.add(ach.id);
+                showAchievementPopup(ach);
+            }
+
+            const slot = document.createElement('div');
+            slot.className = `achievement-slot ${isUnlocked ? 'unlocked' : ''}`;
+            slot.innerHTML = `
+                <div class="achievement-icon">${ach.icon}</div>
+                <div class="achievement-tooltip">
+                    <div style="font-weight:bold; margin-bottom:5px;">${ach.name}</div>
+                    <div>${ach.desc}</div>
+                    <div style="margin-top:5px; color:${isUnlocked ? 'var(--neon-green)' : '#444'}">
+                        [ ${isUnlocked ? 'AUTHORIZED' : 'LOCKED'} ]
+                    </div>
+                </div>
+            `;
+            grid.appendChild(slot);
+        });
+    }
+
     // --- NAVIGATION ---
     function navigateTo(pageId) {
         document.body.classList.remove('show-logs', 'show-galvan');
+        visitedPages.add(pageId);
         
         if (pageId === 'logs') {
             document.body.classList.add('show-logs');
+            stats.logsViewed++;
             renderLogs('aliens');
         } else if (pageId === 'galvan') {
             document.body.classList.add('show-galvan');
@@ -172,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         interact();
+        updateAchievements();
     }
 
     navLinks.forEach((link, idx) => {
@@ -181,9 +284,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- TRACKPAD GESTURE (SWIPE) ---
+    // --- TRACKPAD & TOUCH GESTURES (SWIPE) ---
     let isSwiping = false;
     let swipeThreshold = 50; 
+    let touchStartX = 0;
 
     window.addEventListener('wheel', (e) => {
         if (Math.abs(e.deltaX) > swipeThreshold && !isSwiping && pageWrapper.style.display === 'block') {
@@ -197,13 +301,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
+    window.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+        if (pageWrapper.style.display !== 'block' || isSwiping) return;
+        
+        let touchEndX = e.changedTouches[0].screenX;
+        let diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+            isSwiping = true;
+            if (diff > 0 && currentPageIndex < pages.length - 1) {
+                navigateTo(pages[currentPageIndex + 1]);
+            } else if (diff < 0 && currentPageIndex > 0) {
+                navigateTo(pages[currentPageIndex - 1]);
+            }
+            setTimeout(() => { isSwiping = false; }, 800);
+        }
+    }, { passive: true });
+
+    // --- ATMOSPHERIC AUDIO (WEB AUDIO API) ---
+    let audioCtx, oscillator, gainNode;
+    let isHumming = false;
+
+    function startOmnitrixHum() {
+        if (isHumming) return;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(40, audioCtx.currentTime); // Low bass hum
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 2);
+
+            // Filter for "electric" feel
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            isHumming = true;
+            updateHumPitch();
+        } catch (e) {
+            console.log("Audio Context failed to initialize");
+        }
+    }
+
+    function updateHumPitch() {
+        if (!isHumming || !oscillator) return;
+        // Pitch rises as energy drops (warning feel)
+        const baseFreq = document.body.classList.contains('red-mode') ? 30 : 40;
+        const pitchShift = (100 - energyLevel) / 2;
+        oscillator.frequency.setTargetAtTime(baseFreq + pitchShift, audioCtx.currentTime, 0.5);
+        
+        // Volume pulsates when recharging
+        if (document.body.classList.contains('recharging')) {
+            gainNode.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.1);
+        } else {
+            gainNode.gain.setTargetAtTime(0.03, audioCtx.currentTime, 0.1);
+        }
+        
+        setTimeout(updateHumPitch, 1000);
+    }
+
     // --- ALBEDO MODE ---
     if (securityBypass) {
         securityBypass.addEventListener('click', () => {
             const isRed = !document.body.classList.contains('red-mode');
             if (isRed) {
+                stats.albedoModes++;
                 document.body.classList.add('red-mode', 'breach-active');
                 updateAvatar('albedo');
+                speakProtocol("SECURITY BREACH DETECTED. THE ULTIMATRIX IS UNDER MY CONTROL.", "albedo");
                 if (themeSong) themeSong.pause();
                 if (albedoTheme) {
                     albedoTheme.currentTime = 0;
@@ -218,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.classList.remove('red-mode');
                 document.body.classList.add('restoring-active');
                 updateAvatar('azmuth');
+                speakProtocol("RESTORING AZMUTH PROTOCOLS. SYSTEM INTEGRITY VERIFIED.", "azmuth");
                 if (albedoTheme) albedoTheme.pause();
                 if (themeSong) {
                     themeSong.currentTime = 0;
@@ -229,6 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 setTimeout(() => document.body.classList.remove('restoring-active'), 3000);
             }
+            updateAchievements();
         });
     }
 
@@ -293,10 +473,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (manualRecharge) {
         manualRecharge.addEventListener('click', () => {
+            stats.manualRecharges++;
             clearInterval(drainInterval);
             energyLevel = 0;
             updateEnergyDisplay();
             triggerRecharge();
+            updateAchievements();
         });
     }
 
@@ -375,6 +557,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     });
 
+    const quickDialContainer = document.getElementById('quick-dial-container');
+    const quickDialMenu = document.getElementById('quick-dial-menu');
+    let recentlyViewed = [];
+
+    function updateRecentlyViewed(alien) {
+        if (alien.unlock_status === 'LOCKED') return;
+        recentlyViewed = recentlyViewed.filter(a => a.id !== alien.id);
+        recentlyViewed.unshift(alien);
+        if (recentlyViewed.length > 5) recentlyViewed.pop();
+        renderQuickDial();
+    }
+
+    function renderQuickDial() {
+        if (!quickDialMenu) return;
+        quickDialMenu.innerHTML = '';
+        recentlyViewed.forEach((alien, i) => {
+            const item = document.createElement('div');
+            item.className = 'quick-item';
+            item.innerHTML = `<img src="${alien.image_url}" alt="${alien.name}">`;
+            item.title = alien.name;
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(alien);
+            });
+            quickDialMenu.appendChild(item);
+        });
+    }
+
     function startWelcomeSequence() {
         welcomeText.innerText = `SYNCING...`;
         let w = 0;
@@ -395,6 +605,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         renderAliens(aliens);
                         interact();
+                        startOmnitrixHum();
+                        
+                        // Show Quick Dial
+                        if (quickDialContainer) {
+                            quickDialContainer.style.display = 'block';
+                            setTimeout(() => quickDialContainer.style.opacity = '1', 100);
+                        }
+
                         setTimeout(() => {
                             pageWrapper.style.opacity = '1';
                             document.body.classList.add('avatar-active');
@@ -411,7 +629,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startAzmuthTerminal() {
         const term = document.getElementById('azmuth-terminal');
-        if (!term) return;
+        const history = document.getElementById('terminal-history');
+        const input = document.getElementById('terminal-input');
+        if (!term || !input) return;
+
         const msgs = [
             `> ANALYZING DNA SAMPLES...`,
             `> GALVAN PRIME RELAY ACTIVE.`,
@@ -422,16 +643,88 @@ document.addEventListener('DOMContentLoaded', () => {
             `> RECOGNIZING ${userCodename}...`,
             `> ACCESS GRANTED BY FIRST THINKER.`
         ];
-        let i = 0;
-        setInterval(() => {
-            const m = msgs[Math.floor(Math.random() * msgs.length)];
+
+        const addLog = (text, isUser = false) => {
             const div = document.createElement('div');
-            div.innerHTML = m;
-            term.appendChild(div);
+            div.innerHTML = isUser ? `<span style="color: #fff">> ${text}</span>` : text;
+            history.appendChild(div);
             term.scrollTop = term.scrollHeight;
-            if (term.childNodes.length > 15) term.removeChild(term.childNodes[0]);
-        }, 3000);
+            while (history.childNodes.length > 10) history.removeChild(history.firstChild);
+        };
+
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                addLog(msgs[Math.floor(Math.random() * msgs.length)]);
+            }
+        }, 5000);
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toUpperCase();
+                if (!cmd) return;
+                addLog(cmd, true);
+                input.value = '';
+                stats.terminalCmds++;
+                processCommand(cmd);
+                updateAchievements();
+            }
+        });
+
+        function processCommand(cmd) {
+            setTimeout(() => {
+                switch(cmd) {
+                    case 'HELP':
+                        addLog('> AVAILABLE: SCAN, STATUS, REBOOT, CLEAR, OVERRIDE');
+                        break;
+                    case 'SCAN':
+                        addLog('> SCANNING SECTOR... NO THREATS DETECTED.');
+                        break;
+                    case 'STATUS':
+                        const unlocked = aliens.filter(a => a.unlock_status === 'ACTIVE').length;
+                        addLog(`> DNA CORES: ${unlocked} ACTIVE / ${aliens.length} TOTAL`);
+                        addLog(`> NEURAL STABILITY: ${stabilityValue}%`);
+                        break;
+                    case 'REBOOT':
+                        addLog('> REBOOTING GALVAN RELAY... PLEASE WAIT.');
+                        stabilityValue = 0;
+                        updateStabilityDisplay();
+                        let reb = setInterval(() => {
+                            stabilityValue += 5;
+                            if (stabilityValue >= 98) {
+                                stabilityValue = 98.4;
+                                clearInterval(reb);
+                                addLog('> REBOOT COMPLETE. LINK STABLE.');
+                            }
+                            updateStabilityDisplay();
+                        }, 100);
+                        break;
+                    case 'CLEAR':
+                        history.innerHTML = '';
+                        addLog('> TERMINAL PURGED.');
+                        break;
+                    case 'OVERRIDE':
+                        addLog('> ERR: LEVEL 10 CLEARANCE REQUIRED. ACCESS DENIED.');
+                        break;
+                    default:
+                        addLog(`> ERR: UNKNOWN COMMAND "${cmd}"`);
+                }
+            }, 300);
+        }
     }
+
+    let stabilityValue = 98.4;
+    function updateStabilityDisplay() {
+        const viz = document.querySelector('.neural-link-viz div:last-child');
+        if (viz) viz.innerText = `${stabilityValue.toFixed(1)}%`;
+        
+        // Random fluctuation
+        if (stabilityValue > 90) {
+            stabilityValue += (Math.random() - 0.5) * 0.2;
+            if (stabilityValue > 99.9) stabilityValue = 99.9;
+            setTimeout(updateStabilityDisplay, 2000);
+        }
+    }
+    updateStabilityDisplay();
 
     function renderAliens(data) {
         alienGrid.innerHTML = '';
@@ -534,86 +827,160 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const decryptModal = document.getElementById('decryption-modal');
-    const decryptInput = document.getElementById('decrypt-input');
-    const decryptSubmit = document.getElementById('decrypt-submit');
+    const startMinigameBtn = document.getElementById('start-minigame');
+    const dnaNodes = document.querySelectorAll('.dna-node');
+    const dnaSeqDisplay = document.getElementById('dna-sequence-display');
     const decryptMsg = document.getElementById('decrypt-msg');
     const closeDecrypt = document.querySelector('.close-decrypt');
+    
     let targetAlien = null;
+    let gameSequence = [];
+    let userSequence = [];
+    let isPlayingSequence = false;
 
     function openDecryption(alien) {
         targetAlien = alien;
         decryptModal.style.display = 'flex';
-        decryptInput.value = '';
-        decryptMsg.innerText = '';
-        decryptInput.focus();
+        decryptMsg.innerText = 'INITIATE DNA RECONSTRUCTION PROTOCOL';
+        decryptMsg.style.color = 'var(--neon-green)';
+        startMinigameBtn.style.display = 'block';
+        dnaSeqDisplay.innerHTML = '';
+        userSequence = [];
+        gameSequence = [];
+    }
+
+    if (startMinigameBtn) {
+        startMinigameBtn.addEventListener('click', () => {
+            startMinigameBtn.style.display = 'none';
+            generateSequence();
+        });
+    }
+
+    function generateSequence() {
+        gameSequence = [];
+        userSequence = [];
+        dnaSeqDisplay.innerHTML = '';
+        for (let i = 0; i < 4; i++) {
+            gameSequence.push(Math.floor(Math.random() * 4));
+            const dot = document.createElement('div');
+            dot.className = 'seq-dot';
+            dnaSeqDisplay.appendChild(dot);
+        }
+        playSequence();
+    }
+
+    async function playSequence() {
+        isPlayingSequence = true;
+        decryptMsg.innerText = 'MONITORING DNA STREAM...';
+        for (let i = 0; i < gameSequence.length; i++) {
+            await new Promise(r => setTimeout(r, 600));
+            const nodeId = gameSequence[i];
+            const node = document.querySelector(`.dna-node[data-id="${nodeId}"]`);
+            node.classList.add('active');
+            if (coreReadySfx) {
+                coreReadySfx.currentTime = 0;
+                coreReadySfx.play().catch(() => {});
+            }
+            setTimeout(() => node.classList.remove('active'), 400);
+        }
+        isPlayingSequence = false;
+        decryptMsg.innerText = 'REPLICATE SEQUENCE NOW';
+    }
+
+    dnaNodes.forEach(node => {
+        node.addEventListener('click', () => {
+            if (isPlayingSequence) return;
+            const id = parseInt(node.dataset.id);
+            userSequence.push(id);
+            
+            node.classList.add('active');
+            if (coreReadySfx) {
+                coreReadySfx.currentTime = 0;
+                coreReadySfx.play().catch(() => {});
+            }
+            setTimeout(() => node.classList.remove('active'), 200);
+
+            const currentIndex = userSequence.length - 1;
+            const dots = dnaSeqDisplay.querySelectorAll('.seq-dot');
+
+            if (userSequence[currentIndex] === gameSequence[currentIndex]) {
+                dots[currentIndex].classList.add('active');
+                if (userSequence.length === gameSequence.length) {
+                    handleGameSuccess();
+                }
+            } else {
+                dots[currentIndex].classList.add('wrong');
+                handleGameFailure();
+            }
+        });
+    });
+
+    function handleGameSuccess() {
+        decryptMsg.innerText = 'DNA INTEGRITY VERIFIED. SYNCING...';
+        decryptMsg.style.color = '#39ff14';
+        setTimeout(() => {
+            completeDecryption();
+        }, 1000);
+    }
+
+    function handleGameFailure() {
+        decryptMsg.innerText = 'SYNC ERROR: SEQUENCE MISMATCH';
+        decryptMsg.style.color = '#ff1414';
+        setTimeout(() => {
+            startMinigameBtn.style.display = 'block';
+            startMinigameBtn.innerText = 'RETRY RECONSTRUCTION';
+        }, 1000);
+    }
+
+    function completeDecryption() {
+        const pool = [...database.aliens, ...database.characters];
+        const currentUnlockedNames = aliens.map(a => a.name);
+        const available = pool.filter(p => !currentUnlockedNames.includes(p.name));
+        const source = available.length > 0 ? available : pool;
+        const randomDNA = source[Math.floor(Math.random() * source.length)];
+        const newEntry = {
+            id: Date.now(),
+            name: randomDNA.name,
+            species: randomDNA.species || randomDNA.role || "LEGENDARY ENTITY",
+            planet: randomDNA.planet,
+            series: randomDNA.series || "BEN 10 UNIVERSE",
+            image_url: randomDNA.image_url || "https://via.placeholder.com/200x200/0a1a0a/39FF14?text=CHARACTER",
+            powers: randomDNA.powers || ["Unique Character Abilities"],
+            weaknesses: randomDNA.weaknesses || ["Standard Vulnerabilities"],
+            description: randomDNA.description,
+            unlock_status: 'ACTIVE'
+        };
+        const targetIdx = aliens.findIndex(a => a.id === targetAlien.id);
+        if (targetIdx !== -1) {
+            aliens[targetIdx] = newEntry;
+            aliens.push({
+                id: Date.now() + 1,
+                name: "LOCKED DNA",
+                species: "UNKNOWN",
+                planet: "UNKNOWN",
+                series: "???",
+                image_url: "",
+                powers: [],
+                weaknesses: [],
+                description: "DNA SEQUENCE ENCRYPTED. CLICK TO DECRYPT A RANDOM DNA STREAM FROM THE DATABASE.",
+                unlock_status: "LOCKED"
+            });
+        }
+        
+        decryptModal.style.display = 'none';
+        if (flashOverlay) {
+            flashOverlay.style.background = '#39ff14';
+            flashOverlay.classList.remove('flash-active');
+            void flashOverlay.offsetWidth;
+            flashOverlay.classList.add('flash-active');
+        }
+        applyFilters();
+        updateAchievements();
     }
 
     if (closeDecrypt) {
         closeDecrypt.addEventListener('click', () => {
             decryptModal.style.display = 'none';
-        });
-    }
-
-    if (decryptSubmit) {
-        decryptSubmit.addEventListener('click', () => {
-            const code = decryptInput.value.trim().toUpperCase();
-            decryptMsg.innerText = 'ACCESSING GALVAN SECURE DATABASE...';
-            decryptMsg.style.color = '#ff1414';
-            decryptSubmit.disabled = true;
-            setTimeout(() => {
-                if (code === 'AZMUTH' || code === 'OMNITRIX' || code === 'PRIMUS') {
-                    decryptMsg.style.color = '#39ff14';
-                    decryptMsg.innerText = 'DECRYPTION SUCCESSFUL. DNA STREAM RESTORED.';
-                    const pool = [...database.aliens, ...database.characters];
-                    const currentUnlockedNames = aliens.map(a => a.name);
-                    const available = pool.filter(p => !currentUnlockedNames.includes(p.name));
-                    const source = available.length > 0 ? available : pool;
-                    const randomDNA = source[Math.floor(Math.random() * source.length)];
-                    const newEntry = {
-                        id: Date.now(),
-                        name: randomDNA.name,
-                        species: randomDNA.species || randomDNA.role || "LEGENDARY ENTITY",
-                        planet: randomDNA.planet,
-                        series: randomDNA.series || "BEN 10 UNIVERSE",
-                        image_url: randomDNA.image_url || "https://via.placeholder.com/200x200/0a1a0a/39FF14?text=CHARACTER",
-                        powers: randomDNA.powers || ["Unique Character Abilities"],
-                        weaknesses: randomDNA.weaknesses || ["Standard Vulnerabilities"],
-                        description: randomDNA.description,
-                        unlock_status: 'ACTIVE'
-                    };
-                    const targetIdx = aliens.findIndex(a => a.id === targetAlien.id);
-                    if (targetIdx !== -1) {
-                        aliens[targetIdx] = newEntry;
-                        aliens.push({
-                            id: Date.now() + 1,
-                            name: "LOCKED DNA",
-                            species: "UNKNOWN",
-                            planet: "UNKNOWN",
-                            series: "???",
-                            image_url: "",
-                            powers: [],
-                            weaknesses: [],
-                            description: "DNA SEQUENCE ENCRYPTED. CLICK TO DECRYPT A RANDOM DNA STREAM FROM THE DATABASE.",
-                            unlock_status: "LOCKED"
-                        });
-                    }
-                    setTimeout(() => {
-                        decryptModal.style.display = 'none';
-                        decryptSubmit.disabled = false;
-                        if (flashOverlay) {
-                            flashOverlay.style.background = '#39ff14';
-                            flashOverlay.classList.remove('flash-active');
-                            void flashOverlay.offsetWidth;
-                            flashOverlay.classList.add('flash-active');
-                        }
-                        applyFilters();
-                    }, 1500);
-                } else {
-                    decryptMsg.style.color = '#ff1414';
-                    decryptMsg.innerText = 'ERR: INVALID SECURITY KEY. ACCESS DENIED.';
-                    decryptSubmit.disabled = false;
-                }
-            }, 1500);
         });
     }
 
@@ -642,6 +1009,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function openModal(alien) {
+        updateRecentlyViewed(alien);
+        updateAchievements();
         const visualContent = alien.model_url 
             ? `<model-viewer src="${alien.model_url}" poster="${alien.image_url}" auto-rotate camera-controls shadow-intensity="1" style="width: 100%; height: 100%;" background-color="#000"></model-viewer>`
             : `<div class="pan-container" id="pan-box"><img src="${alien.image_url}" class="pan-image" id="pan-img"></div>`;
