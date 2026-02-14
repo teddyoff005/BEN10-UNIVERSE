@@ -8,6 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
         cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
     });
 
+    // --- MASTER CONTROL CHEAT CODE ---
+    let cheatBuffer = "";
+    window.addEventListener('keydown', (e) => {
+        cheatBuffer += e.key.toUpperCase();
+        if (cheatBuffer.length > 8) cheatBuffer = cheatBuffer.substring(1);
+        if (cheatBuffer === "HEROTIME") {
+            cheatBuffer = "";
+            unlockMasterControl();
+        }
+    });
+
+    function unlockMasterControl() {
+        aliens.forEach(a => a.unlock_status = 'ACTIVE');
+        renderAliens(aliens);
+        speakProtocol("MASTER CONTROL ACTIVATED. ALL DNA SAMPLES AUTHORIZED.", "azmuth");
+        if (coreReadySfx) {
+            coreReadySfx.currentTime = 0;
+            coreReadySfx.play().catch(() => {});
+        }
+        document.body.classList.add('master-control-unlocked');
+        setTimeout(() => document.body.classList.remove('master-control-unlocked'), 2000);
+    }
+
     const interact = () => {
         const items = document.querySelectorAll('a, button, input, select, .alien-card, .omnitrix-dial-container, .log-filter-btn');
         items.forEach(el => {
@@ -218,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         setTimeout(() => {
-            popup.style.animation = 'popup-slide-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards';
+            popup.style.animation = 'popup-slide-out 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
             setTimeout(() => popup.remove(), 600);
         }, 4000);
     }
@@ -249,33 +272,34 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             grid.appendChild(slot);
         });
+        interact();
     }
 
     // --- NAVIGATION ---
-    function navigateTo(pageId) {
-        document.body.classList.remove('show-logs', 'show-galvan');
-        visitedPages.add(pageId);
-        
-        if (pageId === 'logs') {
-            document.body.classList.add('show-logs');
-            stats.logsViewed++;
-            renderLogs('aliens');
-        } else if (pageId === 'galvan') {
-            document.body.classList.add('show-galvan');
-        }
-
-        // Update Nav Links Active State
-        navLinks.forEach((link, idx) => {
-            link.classList.remove('active');
-            if (pages[idx] === pageId) {
-                link.classList.add('active');
-                currentPageIndex = idx;
+        function navigateTo(pageId) {
+            document.body.classList.remove('show-logs', 'show-galvan');
+            visitedPages.add(pageId);
+            
+            if (pageId === 'logs') {
+                document.body.classList.add('show-logs');
+                stats.logsViewed++;
+                renderLogs('aliens');
+            } else if (pageId === 'galvan') {
+                document.body.classList.add('show-galvan');
             }
-        });
-
-        interact();
-        updateAchievements();
-    }
+    
+            // Update Nav Links Active State
+            navLinks.forEach((link, idx) => {
+                link.classList.remove('active');
+                if (pages[idx] === pageId) {
+                    link.classList.add('active');
+                    currentPageIndex = idx;
+                }
+            });
+    
+            interact();
+            updateAchievements();
+        }
 
     navLinks.forEach((link, idx) => {
         link.addEventListener('click', (e) => {
@@ -531,11 +555,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (audioToggle && themeSong) {
+        // --- AUDIO VISUALIZER ---
+        let analyser, bufferLength, dataArray, vizCanvas, vizCtx;
+        function initVisualizer() {
+            if (analyser || !themeSong) return;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const source = audioCtx.createMediaElementSource(themeSong);
+                const sourceAlbedo = audioCtx.createMediaElementSource(albedoTheme);
+                analyser = audioCtx.createAnalyser();
+                source.connect(analyser);
+                sourceAlbedo.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                analyser.fftSize = 128;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+                vizCanvas = document.getElementById('audio-visualizer');
+                if (vizCanvas) {
+                    vizCanvas.width = vizCanvas.clientWidth || 100;
+                    vizCanvas.height = vizCanvas.clientHeight || 30;
+                    vizCtx = vizCanvas.getContext('2d');
+                    drawVisualizer();
+                }
+            } catch(e) { console.log("Visualizer failed to init", e); }
+        }
+
+        function drawVisualizer() {
+            requestAnimationFrame(drawVisualizer);
+            if (!analyser) return;
+            analyser.getByteFrequencyData(dataArray);
+            vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+            const barWidth = (vizCanvas.width / bufferLength) * 2.5;
+            let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = (dataArray[i] / 255) * vizCanvas.height;
+                const color = document.body.classList.contains('red-mode') ? '#ff1414' : '#39FF14';
+                vizCtx.fillStyle = color;
+                vizCtx.fillRect(x, vizCanvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+        }
+
         audioToggle.addEventListener('click', () => {
             const isMuted = !themeSong.muted;
             themeSong.muted = isMuted;
             if (albedoTheme) albedoTheme.muted = isMuted;
             audioToggle.innerText = isMuted ? '🔇' : '🔊';
+            if (!isMuted) initVisualizer();
         });
     }
 
@@ -604,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (galvanUserId) galvanUserId.innerText = `UID_${userCodename}_${Math.floor(Math.random() * 10000)}`;
 
                         renderAliens(aliens);
-                        interact();
+                
                         startOmnitrixHum();
                         
                         // Show Quick Dial
@@ -736,6 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.animation = `fadeInUp 0.5s ease forwards ${i * 0.05}s, filter-glitch 0.4s ease-out forwards`;
             card.innerHTML = `
                 <div class="card-image-container">
+                    <div class="card-glare"></div>
                     <img src="${imgUrl}" alt="${alien.name}" onerror="this.src='https://via.placeholder.com/200x200/0a1a0a/39FF14?text=DNA+ERROR'">
                     ${isLocked ? '<div class="lock-overlay"><div class="lock-icon">🔒</div></div>' : ''}
                 </div>
@@ -748,9 +817,18 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('mousemove', (e) => {
                 if (card.classList.contains('flipping')) return;
                 const r = card.getBoundingClientRect();
-                const x = ((e.clientX - r.left - r.width/2) / r.width * 20);
-                const y = -((e.clientY - r.top - r.height/2) / r.height * 20);
+                const xPos = e.clientX - r.left;
+                const yPos = e.clientY - r.top;
+                
+                const x = ((xPos - r.width/2) / r.width * 20);
+                const y = -((yPos - r.height/2) / r.height * 20);
                 card.style.transform = `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) scale(1.02)`;
+                
+                const glare = card.querySelector('.card-glare');
+                if (glare) {
+                    glare.style.setProperty('--x', `${(xPos / r.width) * 100}%`);
+                    glare.style.setProperty('--y', `${(yPos / r.height) * 100}%`);
+                }
             });
             card.addEventListener('mouseleave', () => {
                 if (card.classList.contains('flipping')) return;
@@ -774,6 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             alienGrid.appendChild(card);
         });
+        interact();
         updateBadges();
     }
 
@@ -824,6 +903,8 @@ document.addEventListener('DOMContentLoaded', () => {
             b.innerText = text;
             badgeContainer.appendChild(b);
         }
+        interact();
+        updateAchievements();
     }
 
     const decryptModal = document.getElementById('decryption-modal');
@@ -1001,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return a.id - b.id;
         });
         renderAliens(filtered);
-        interact();
+
     }
 
     [searchBar, filterSeries, filterPower, sortAliens].forEach(el => {
