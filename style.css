@@ -220,7 +220,22 @@ body.hovering .cursor-outline { width: 60px; height: 60px; background: rgba(57, 
 }
 
 /* --- Header & Side Decos --- */
-.fandom-header { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: #000; border-bottom: 2px solid var(--neon-green); display: flex; justify-content: space-between; align-items: center; padding: 0 40px; z-index: 15000; }
+.fandom-header { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: var(--header-height); 
+    background: #000; 
+    border-bottom: 2px solid var(--neon-green); 
+    display: none; 
+    opacity: 0;
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 40px; 
+    z-index: 15000; 
+    transition: opacity 0.8s ease;
+}
 .site-logo { font-family: var(--font-head); font-weight: 900; font-size: 1.5rem; color: #fff; }
 .green { color: var(--neon-green); }
 .nav-link { text-decoration: none; color: #888; font-family: var(--font-head); font-size: 0.8rem; margin: 0 10px; transition: 0.3s; }

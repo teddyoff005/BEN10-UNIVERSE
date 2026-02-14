@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const securityBypass = document.getElementById('security-bypass');
     const siteLogo = document.querySelector('.glitch');
     const navLinks = document.querySelectorAll('.nav-link');
+    const fandomHeader = document.querySelector('.fandom-header');
     
     // Page IDs in order for navigation
     const pages = ['dna', 'logs', 'galvan'];
@@ -666,6 +667,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         welcomeScreen.style.display = 'none';
                         pageWrapper.style.display = 'block';
+                        
+                        // Show Header
+                        if (fandomHeader) {
+                            fandomHeader.style.display = 'flex';
+                            setTimeout(() => fandomHeader.style.opacity = '1', 50);
+                        }
+
                         userDisplay.innerHTML = `OPERATOR IDENTIFIED: <span class="highlight">${userCodename}</span> // SEC: MILKY WAY // [TECH LEVEL: 20]`;
                         
                         const galvanUserId = document.getElementById('galvan-user-id');
